@@ -1,5 +1,3 @@
-﻿# cnn_module_project
-
 # AIPI CNN Module Project
 ## Developer: Keese Phillips
 
