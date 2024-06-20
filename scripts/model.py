@@ -13,8 +13,14 @@ import warnings
 warnings.filterwarnings('ignore')
 
 def train_model(model,criterion,optimizer,train_loader,n_epochs,device):
+    """
+    Trains the neural network on the training data. Iterates based on the 
+    number of epochs specified. Will output the loss to graph using matplotlib
+    if needed
     
-    loss_over_time = [] # to track the loss as the network trains
+    """
+    
+    loss_over_time = [] 
     
     model = model.to(device) # Send model to GPU if available
     model.train() # Set the model to training mode
@@ -46,16 +52,21 @@ def train_model(model,criterion,optimizer,train_loader,n_epochs,device):
             # Convert loss into a scalar and add it to running_loss
             running_loss += loss.item()
             
-            #if i % 1000 == 999:    # print every 1000 batches
-            avg_loss = running_loss/1000
-            # record and print the avg loss over the 1000 batches
-            loss_over_time.append(avg_loss)
-            print('Epoch: {}, Batch: {}, Avg. Loss: {:.4f}'.format(epoch + 1, i+1, avg_loss))
-            running_loss = 0.0
+            if i % 100 == 99:    
+                avg_loss = running_loss / 100
+                loss_over_time.append(avg_loss)
+                print('Epoch: {}, Batch: {}, Avg. Loss: {:.4f}'.format(epoch + 1, i+1, avg_loss))
+                running_loss = 0.0
 
     return loss_over_time
 
 def test_model(model,test_loader,device):
+    """
+    Tests the neural network on the test data. Will output the 
+    accuracy and recall of the trained model
+    
+    """
+    
     # Turn autograd off
     with torch.no_grad():
 
@@ -122,16 +133,9 @@ if __name__ == '__main__':
     # Define the model
     model = resnet152(pretrained=True)
 
-    # Number of out units is number of classes (10)
+    # Number of out units is number of classes 
     num_ftrs = model.fc.in_features
     model.fc = nn.Linear(num_ftrs, len(train_data.classes))
-
-    # if model.AuxLogits is not None:
-    #     # Adjust the first convolutional layer in AuxLogits
-    #     model.AuxLogits.conv0 = nn.Conv2d(768, 128, kernel_size=1, stride=1)
-
-    #     # Also adjust conv1 to have a smaller kernel size
-    #     model.AuxLogits.conv1 = nn.Conv2d(128, 768, kernel_size=3, padding=1) # Match kernel size to input
 
     # Define the loss function and optimizer
     criterion = nn.CrossEntropyLoss()
@@ -148,61 +152,8 @@ if __name__ == '__main__':
     # Calculate the test set accuracy and recall for each class
     acc,recall_vals = test_model(model,test_loader,device)
     print('Test set accuracy is {:.3f}'.format(acc))
-    # for i in range(10):
-    #     print('For class {}, recall is {}'.format(classes[i],recall_vals[i]))
 
-
-    # # Train the model
-    for epoch in range(num_epochs):
-        # Train the model on the training set
-        model.train()
-
-        train_loss = 0.0
-        for i, (inputs, labels) in enumerate(train_loader):
-            # Move the data to the device
-            inputs = inputs.to(device)
-            labels = labels.to(device)
-
-            # Zero the parameter gradients
-            optimizer.zero_grad()
-
-            # Forward + backward + optimize
-            outputs = model(inputs)
-
-            # Inception v3 returns an InceptionOutputs object, extract the logits
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-
-            # Update the training loss
-            train_loss += loss.item() * inputs.size(0)
-
-        # Evaluate the model on the test set
-        model.eval()
-        test_loss = 0.0
-        test_acc = 0.0
-        with torch.no_grad():
-            for i, (inputs, labels) in enumerate(test_loader):
-                # Move the data to the device
-                inputs = inputs.to(device)
-                labels = labels.to(device)
-
-                # Forward
-                outputs = model(inputs)
-                loss = criterion(outputs, labels)
-
-                # Update the test loss and accuracy
-                test_loss += loss.item() * inputs.size(0)
-                _, preds = torch.max(outputs, 1)
-                test_acc += torch.sum(preds == labels.data)
-
-        # Print the training and test loss and accuracy
-        train_loss /= len(train_data)
-        test_loss /= len(test_data)
-        test_acc = test_acc.double() / len(test_data)
-        print(f"Epoch [{epoch + 1}/{num_epochs}] Train Loss: {train_loss:.4f} Test Loss: {test_loss:.4f} Test Acc: {test_acc:.4f}")
-
-
+    # Save the full model
     model_dir = 'models/'
     os.makedirs(os.path.dirname(model_dir), exist_ok=True)
 
