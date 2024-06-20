@@ -1,3 +1,11 @@
+"""
+Attribution: https://github.com/AIPI540/AIPI540-Deep-Learning-Applications/
+
+Jon Reifschneider
+Brinnae Bent 
+
+"""
+
 import os
 import torch
 import torchvision

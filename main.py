@@ -1,3 +1,12 @@
+"""
+Attribution: https://github.com/AIPI540/AIPI540-Deep-Learning-Applications/
+
+Jon Reifschneider
+Brinnae Bent 
+
+"""
+
+
 import streamlit as st
 from PIL import Image
 import numpy as np
